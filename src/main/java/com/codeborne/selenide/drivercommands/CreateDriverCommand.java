@@ -1,6 +1,7 @@
 package com.codeborne.selenide.drivercommands;
 
 import com.codeborne.selenide.Config;
+import com.codeborne.selenide.impl.FileNamer;
 import com.codeborne.selenide.proxy.SelenideProxyServer;
 import com.codeborne.selenide.webdriver.WebDriverFactory;
 import org.openqa.selenium.Proxy;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.io.File;
 import java.util.List;
 
 import static java.lang.Thread.currentThread;
@@ -20,6 +22,15 @@ import static java.lang.Thread.currentThread;
 @ParametersAreNonnullByDefault
 public class CreateDriverCommand {
   private static final Logger log = LoggerFactory.getLogger(CreateDriverCommand.class);
+  private final FileNamer fileNamer;
+
+  public CreateDriverCommand() {
+    this(new FileNamer());
+  }
+
+  CreateDriverCommand(FileNamer fileNamer) {
+    this.fileNamer = fileNamer;
+  }
 
   @Nonnull
   public Result createDriver(Config config,
@@ -47,7 +58,9 @@ public class CreateDriverCommand {
       }
     }
 
-    WebDriver webdriver = factory.createWebDriver(config, browserProxy);
+    File browserDownloadsFolder = new File(config.downloadsFolder(), fileNamer.generateFileName());
+
+    WebDriver webdriver = factory.createWebDriver(config, browserProxy, browserDownloadsFolder);
 
     log.info("Create webdriver in current thread {}: {} -> {}",
       currentThread().getId(), webdriver.getClass().getSimpleName(), webdriver);
@@ -56,7 +69,7 @@ public class CreateDriverCommand {
     Runtime.getRuntime().addShutdownHook(
       new Thread(new SelenideDriverFinalCleanupThread(config, webDriver, selenideProxyServer))
     );
-    return new Result(webDriver, selenideProxyServer);
+    return new Result(webDriver, selenideProxyServer, browserDownloadsFolder);
   }
 
   @Nonnull
@@ -76,10 +89,12 @@ public class CreateDriverCommand {
   public static class Result {
     public final WebDriver webDriver;
     public final SelenideProxyServer selenideProxyServer;
+    public final File browserDownloadsFolder;
 
-    public Result(WebDriver webDriver, @Nullable SelenideProxyServer selenideProxyServer) {
+    public Result(WebDriver webDriver, @Nullable SelenideProxyServer selenideProxyServer, File browserDownloadsFolder) {
       this.webDriver = webDriver;
       this.selenideProxyServer = selenideProxyServer;
+      this.browserDownloadsFolder = browserDownloadsFolder;
     }
   }
 }

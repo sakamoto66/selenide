@@ -3,6 +3,7 @@ package com.codeborne.selenide.impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,7 +25,7 @@ public final class FileHelper {
   }
 
   public static void copyFile(InputStream in, File targetFile) throws IOException {
-    ensureFolderExists(targetFile);
+    ensureParentFolderExists(targetFile);
 
     try (FileOutputStream out = new FileOutputStream(targetFile)) {
       byte[] buffer = new byte[1024];
@@ -35,13 +36,18 @@ public final class FileHelper {
     }
   }
 
-  private static void ensureFolderExists(File targetFile) {
-    File folder = targetFile.getParentFile();
+  public static void ensureParentFolderExists(File targetFile) {
+    ensureFolderExists(targetFile.getParentFile());
+  }
+
+  @Nonnull
+  public static File ensureFolderExists(File folder) {
     if (!folder.exists()) {
-      log.info("Creating folder: {}", folder);
+      log.info("Creating folder: {}", folder.getAbsolutePath());
       if (!folder.mkdirs()) {
-        log.error("Failed to create {}", folder);
+        log.error("Failed to create folder: {}", folder.getAbsolutePath());
       }
     }
+    return folder;
   }
 }
