@@ -16,10 +16,11 @@ import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.closeWebDriver;
 import static com.codeborne.selenide.Selenide.open;
+import static com.codeborne.selenide.WebDriverRunner.getBrowserDownloadsFolder;
 import static com.codeborne.selenide.files.FileFilters.withExtension;
 import static com.codeborne.selenide.files.FileFilters.withName;
 import static com.codeborne.selenide.files.FileFilters.withNameMatching;
-import static org.apache.commons.io.FileUtils.deleteDirectory;
+import static com.codeborne.selenide.impl.FileHelper.cleanupFolder;
 import static org.apache.commons.io.FileUtils.readFileToString;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -32,7 +33,7 @@ public class FileDownloadToFolderTest  extends IntegrationTest {
     Configuration.fileDownload = FileDownloadMode.FOLDER;
     openFile("page_with_uploads.html");
     timeout = 4000;
-    deleteDirectory(new File(downloadsFolder));
+    cleanupFolder(getBrowserDownloadsFolder());
   }
 
   @Test
@@ -106,7 +107,7 @@ public class FileDownloadToFolderTest  extends IntegrationTest {
   @Test
   void downloadsFilesToCustomFolder() throws IOException {
     closeWebDriver();
-    String customDownloadsFolder = "build/custom-folder";
+    String customDownloadsFolder = "build/custom-folder-" + System.currentTimeMillis();
     downloadsFolder = customDownloadsFolder;
 
     try {

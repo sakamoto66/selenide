@@ -11,6 +11,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static org.apache.commons.io.FileUtils.cleanDirectory;
+
 @ParametersAreNonnullByDefault
 public final class FileHelper {
   private static final Logger log = LoggerFactory.getLogger(FileHelper.class);
@@ -49,5 +51,11 @@ public final class FileHelper {
       }
     }
     return folder;
+  }
+
+  public static void cleanupFolder(File folder) throws IOException {
+    if (folder.isDirectory()) {
+      cleanDirectory(folder);
+    }
   }
 }
