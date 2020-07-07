@@ -17,6 +17,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.io.File;
 import java.util.List;
 
+import static com.codeborne.selenide.impl.FileHelper.ensureFolderExists;
 import static java.lang.Thread.currentThread;
 
 @ParametersAreNonnullByDefault
@@ -58,7 +59,7 @@ public class CreateDriverCommand {
       }
     }
 
-    File browserDownloadsFolder = new File(config.downloadsFolder(), fileNamer.generateFileName());
+    File browserDownloadsFolder = ensureFolderExists(new File(config.downloadsFolder(), fileNamer.generateFileName()));
 
     WebDriver webdriver = factory.createWebDriver(config, browserProxy, browserDownloadsFolder);
 
