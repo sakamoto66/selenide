@@ -83,7 +83,6 @@ class FramesTest extends ITest {
     $("h1").shouldHave(text("Page with JQuery"));
   }
 
-
   @Test
   void throwsNoSuchFrameExceptionWhenSwitchingToAbsentFrameByElement() {
     assertThat(driver().title()).isEqualTo("Test::frames");
@@ -92,7 +91,8 @@ class FramesTest extends ITest {
       switchTo().frame("mainFrame");
       // $("#log") is present, but not frame.
       switchTo().frame($("#log"));
-    }).isInstanceOf(NoSuchFrameException.class).hasMessage("No frame found with element: <div id=\"log\" displayed:false></div>");
+    }).isInstanceOf(NoSuchFrameException.class)
+      .hasMessageMatching("No frame found with element:.+log.+");
   }
 
   @Test
