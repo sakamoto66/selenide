@@ -121,8 +121,7 @@ public class ByShadow {
     @CheckReturnValue
     @Nonnull
     public String toString() {
-      final StringBuilder sb = new StringBuilder("By.cssSelector: ");
-      //sb.append(shadowHost).append(" ");
+      StringBuilder sb = new StringBuilder("By.cssSelector: ");
       if (innerShadowHosts.length > 0) {
         sb.append(Arrays.toString(innerShadowHosts)).append(" ");
       }
