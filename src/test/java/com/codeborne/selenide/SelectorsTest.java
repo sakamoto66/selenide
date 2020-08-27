@@ -174,7 +174,7 @@ class SelectorsTest implements WithAssertions {
     assertThat(cssSelector)
       .isInstanceOf(ByShadow.ByShadowCss.class);
     assertThat(cssSelector)
-      .hasToString("By.cssSelector: " + shadow + " [" + innerShadow + "] " + target);
+      .hasToString("By.cssSelector: [" + shadow + ", " + innerShadow + "] " + target);
   }
 
   @Test
