@@ -84,8 +84,8 @@ public class Selectors {
    */
   @CheckReturnValue
   @Nonnull
-  public static By shadowCss(String target, String shadowHost, String... innerShadowHosts) {
-    return ByShadow.cssSelector(target, shadowHost, innerShadowHosts);
+  public static By shadowCss(String target, String... innerShadowHosts) {
+    return ByShadow.cssSelector(target, innerShadowHosts);
   }
 
   /**

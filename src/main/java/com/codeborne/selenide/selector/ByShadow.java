@@ -31,24 +31,22 @@ public class ByShadow {
    */
   @CheckReturnValue
   @Nonnull
-  public static By cssSelector(String target, String shadowHost, String... innerShadowHosts) {
-    return new ByShadowCss(target, shadowHost, innerShadowHosts);
+  public static By cssSelector(String target, String... innerShadowHosts) {
+    return new ByShadowCss(target, innerShadowHosts);
   }
 
   @ParametersAreNonnullByDefault
   public static class ByShadowCss extends By implements Serializable {
     private static final long serialVersionUID = -1230258723099459239L;
 
-    private final String shadowHost;
     private final String[] innerShadowHosts;
     private final String target;
 
-    ByShadowCss(String target, String shadowHost, String... innerShadowHosts) {
-      //noinspection ConstantConditions
-      if (shadowHost == null || target == null) {
+    ByShadowCss(String target, String... innerShadowHosts) {
+      // noinspection ConstantConditions
+      if (target == null) {
         throw new IllegalArgumentException("Cannot find elements when the selector is null");
       }
-      this.shadowHost = shadowHost;
       this.innerShadowHosts = innerShadowHosts;
       this.target = target;
     }
@@ -57,11 +55,7 @@ public class ByShadow {
     @CheckReturnValue
     @Nonnull
     public WebElement findElement(SearchContext context) {
-      WebElement host = context.findElement(By.cssSelector(shadowHost));
-      for (String innerHost : innerShadowHosts) {
-        host = getElementInsideShadowTree(host, innerHost);
-      }
-
+      final SearchContext host = findShadowTree(context);
       return getElementInsideShadowTree(host, target);
     }
 
@@ -69,18 +63,14 @@ public class ByShadow {
     @CheckReturnValue
     @Nonnull
     public List<WebElement> findElements(SearchContext context) {
-      WebElement host = context.findElement(By.cssSelector(shadowHost));
-      for (String innerHost : innerShadowHosts) {
-        host = getElementInsideShadowTree(host, innerHost);
-      }
-
+      final SearchContext host = findShadowTree(context);
       return getElementsInsideShadowTree(host, target);
     }
 
-    private WebElement getElementInsideShadowTree(WebElement host, String target) {
+    private WebElement getElementInsideShadowTree(SearchContext host, String target) {
       if (isShadowRootAttached(host)) {
         WebElement targetWebElement = (WebElement) getJavascriptExecutor(host)
-          .executeScript("return arguments[0].shadowRoot.querySelector(arguments[1])", host, target);
+            .executeScript("return arguments[0].shadowRoot.querySelector(arguments[1])", host, target);
         if (targetWebElement == null) {
           throw new NoSuchElementException("The element was not found: " + target);
         }
@@ -90,14 +80,14 @@ public class ByShadow {
       }
     }
 
-    private boolean isShadowRootAttached(WebElement host) {
+    private boolean isShadowRootAttached(SearchContext host) {
       return getJavascriptExecutor(host).executeScript("return arguments[0].shadowRoot", host) != null;
     }
 
     @SuppressWarnings("unchecked")
-    private List<WebElement> getElementsInsideShadowTree(WebElement host, String sh) {
+    private List<WebElement> getElementsInsideShadowTree(SearchContext host, String sh) {
       return (List<WebElement>) getJavascriptExecutor(host)
-        .executeScript("return arguments[0].shadowRoot.querySelectorAll(arguments[1])", host, sh);
+          .executeScript("return arguments[0].shadowRoot.querySelectorAll(arguments[1])", host, sh);
     }
 
     private JavascriptExecutor getJavascriptExecutor(SearchContext context) {
@@ -110,12 +100,29 @@ public class ByShadow {
       return jsExecutor;
     }
 
+    private SearchContext findShadowTree(final SearchContext context) {
+      SearchContext host = context;
+      if (context instanceof WebElement) {
+        for (final String innerHost : innerShadowHosts) {
+          host = getElementInsideShadowTree(host, innerHost);
+        }
+      } else if (innerShadowHosts.length == 0) {
+        throw new NoSuchElementException("The element was not found: " + target);
+      } else {
+        host = context.findElement(By.cssSelector(innerShadowHosts[0]));
+        for (int i = 1; i < innerShadowHosts.length; i++) {
+          host = getElementInsideShadowTree(host, innerShadowHosts[i]);
+        }
+      }
+      return host;
+    }
+
     @Override
     @CheckReturnValue
     @Nonnull
     public String toString() {
-      StringBuilder sb = new StringBuilder("By.cssSelector: ");
-      sb.append(shadowHost).append(" ");
+      final StringBuilder sb = new StringBuilder("By.cssSelector: ");
+      //sb.append(shadowHost).append(" ");
       if (innerShadowHosts.length > 0) {
         sb.append(Arrays.toString(innerShadowHosts)).append(" ");
       }

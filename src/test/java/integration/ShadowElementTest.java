@@ -59,7 +59,7 @@ public class ShadowElementTest extends ITest {
   void throwErrorWhenInnerShadowHostAbsent() {
     assertThatThrownBy(() -> $(shadowCss("p", "#shadow-host", "#nonexistent")).text())
       .isInstanceOf(ElementNotFound.class)
-      .hasMessageContaining("Element not found {#shadow-host [#nonexistent] p}")
+      .hasMessageContaining("Element not found {[#shadow-host, #nonexistent] p}")
       .hasCauseInstanceOf(NoSuchElementException.class)
       .hasMessageContaining("The element was not found: #nonexistent");
   }
@@ -80,5 +80,11 @@ public class ShadowElementTest extends ITest {
   void getNonExistingTargetElementsInsideShadowHost() {
     $$(shadowCss("#nonexistent", "#shadow-host"))
       .shouldHaveSize(0);
+  }
+
+  @Test
+  void getElementsInsideInnerShadowHosts() {
+    $$(shadowCss("div.fourth-shadow-host", "#next-shadow-host", "div")).shouldHaveSize(10);
+    $$(shadowCss("div.fourth-shadow-host", "#next-shadow-host", "div")).get(3).$$(shadowCss("p")).shouldHaveSize(3);
   }
 }
